@@ -1,13 +1,7 @@
-
+var baseUrl = 'http://52.74.21.190/';
 var gatewaysCache = null;
 
 $(document).ready(function() {
-  $(".clickable").click(function() {
-	alert('aa');
-    if ($(this).data().url !== undefined) {
-      window.location = $(this).data().url;
-    }
-  });
 
   loadCarparks();
 
@@ -18,8 +12,12 @@ function loadCarparks() {
   $( ".navlinks" ).removeClass("selected");
   $( "#navlink-carparks" ).addClass("selected");
   $( "#main-container" ).load( "include-carparks.html", function() {
+
+	  /**
+	   * Show data
+	   */
 	  $.ajax({
-	      url: 'http://52.74.21.190/api/devicemanager/getAllGatewaysWithLotsInformation',
+	      url: baseUrl + 'api/devicemanager/getAllGatewaysWithLotsInformation',
 	      data: {
 	          format: 'json'
 	      },
@@ -55,6 +53,32 @@ function loadCarparks() {
 	      type: 'GET'
 	  });
 
+	  /**
+	   * Add new carpark
+	   */
+	  $("#add-carpark-form").submit(function(event) {
+
+	  	event.preventDefault(); //STOP default action
+
+		$('.form-control').attr('disabled', 'disabled');
+        $('#add-carpark-form-btn-close').css('display', 'none');
+        $('#add-carpark-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
+
+	    var postData = $(this).serializeArray();
+	    $.ajax({
+	        url : baseUrl + 'api/devicemanager/addCarpark',
+	        type: "POST",
+	        data : postData,
+	        success:function(data, textStatus, jqXHR) {
+		        $('#add-carpark-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
+	        },
+	        error: function(jqXHR, textStatus, errorThrown) {
+				$('.form-control').removeAttr('disabled');
+		        $('#add-carpark-form-btn-close').css('display', 'inline');
+		        $('#add-carpark-form-btn-add').html('Add');
+	        }
+	    });
+	  });
   });
 }
 
@@ -85,13 +109,27 @@ function loadGateways() {
   $( ".navlinks" ).removeClass("selected");
   $( "#navlink-gateways" ).addClass("selected");
   $( "#main-container" ).load( "include-gateways.html", function() {
+
+	  /**
+	   * Show data
+	   */
   	  var count = 0;
       $.each(gatewaysCache, function(key,value){
           count++;
 
           var dataHtml = "<div class=\"row\">" +
 			        "<div class=\"col-xs-12\">" +
-			          "<h4 class=\"blue\">"+value.name+"</h4>" +
+			          "<div class=\"col-xs-11\">" +
+			            "<h4 class=\"blue\">"+value.name+"</h4>" +
+			          "</div>";
+		  if (value._id != null) {
+		  dataHtml += "<div class=\"col-xs-1\">" +
+						"<button type=\"button\" class=\"btn btn-info btn-sm\" data-toggle=\"modal\" onClick=\"showAddGatewayToCarkparkModal("+value._id+")\">" +
+            			  "<span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> Add New" +
+          				"</button>"+
+			          "</div>";
+	      }
+		  dataHtml += "<div class=\"col-xs-12\">" +
 			          "<table class=\"table table-hover\">" +
 			            "<tbody>";
       	  var gatewayCount = 0;
@@ -104,16 +142,54 @@ function loadGateways() {
           });
 		  dataHtml += 	"</tbody>" +
 			          "</table>" +
+			          "</div>" +
 			        "</div>" +
 			      "</div>" +
 			    "</div>" +
 			    "<br />";
           
-          $("#main-container").append(dataHtml);
+          $("#include-gateway-data").append(dataHtml);
       });
 
       $('#message').html(count + ' rows fetched successfully');
   });
+}
+
+function showAddGatewayToCarkparkModal(carparkId) {
+	$('#add-gateway-carparkid').html(carparkId);
+	$("#carParkId").val(carparkId);
+
+	$('#add-gateway-model').modal('show');
+
+	/**
+	* Add new gateway to carpark
+	*/
+	$("#add-gateway-form").submit(function(event) {
+
+		event.preventDefault(); //STOP default action
+
+		$('.form-control').attr('disabled', 'disabled');
+		$('#add-gateway-form-btn-close').css('display', 'none');
+		$('#add-gateway-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
+
+		var postData = $(this).serializeArray();
+		$.ajax({
+		    url : baseUrl + 'api/devicemanager/addGatewayToCarpark',
+		    type: "POST",
+		    data : postData,
+		    success:function(data, textStatus, jqXHR) {
+		        $('#add-gateway-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+				$('.form-control').removeAttr('disabled');
+		        $('#add-gateway-form-btn-close').css('display', 'inline');
+		        $('#add-gateway-form-btn-add').html('Add');
+		    }
+		});
+	});
+}
+
+function addGatewayToCarkpark(carparkId) {
 }
 
 function loadGatewayDetails(carparkIndex, gatwayIndex) {
