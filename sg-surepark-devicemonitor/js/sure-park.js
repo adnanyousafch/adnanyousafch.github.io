@@ -60,11 +60,14 @@ function loadCarparks() {
 
 	  	event.preventDefault(); //STOP default action
 
+	  	//get the data first
+	    var postData = $(this).serializeArray();
+		console.log(postData);
+
 		$('.form-control').attr('disabled', 'disabled');
         $('#add-carpark-form-btn-close').css('display', 'none');
         $('#add-carpark-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
 
-	    var postData = $(this).serializeArray();
 	    $.ajax({
 	        url : baseUrl + 'api/devicemanager/addCarpark',
 	        type: "POST",
@@ -168,11 +171,14 @@ function showAddGatewayToCarkparkModal(carparkId) {
 
 		event.preventDefault(); //STOP default action
 
+		//get the data
+		var postData = $(this).serializeArray();
+		console.log(postData);
+
 		$('.form-control').attr('disabled', 'disabled');
 		$('#add-gateway-form-btn-close').css('display', 'none');
 		$('#add-gateway-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
 
-		var postData = $(this).serializeArray();
 		$.ajax({
 		    url : baseUrl + 'api/devicemanager/addGatewayToCarpark',
 		    type: "POST",
@@ -187,9 +193,6 @@ function showAddGatewayToCarkparkModal(carparkId) {
 		    }
 		});
 	});
-}
-
-function addGatewayToCarkpark(carparkId) {
 }
 
 function loadGatewayDetails(carparkIndex, gatwayIndex) {
@@ -208,6 +211,16 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 	  $( "#gateway-detail-ip-address" ).html(firstLot.ip_address);
 	  $( "#gateway-detail-mac-address" ).html(firstLot.LotMacID);
 	  $( "#gateway-detail-status" ).html("Not connected");
+
+	  var rebootBtnHtml = "<button id=\"gateway-detail-reboot-all-lots\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"rebootAllLots('"+gateWay.gatewayId+"')\">" +
+				            "<span class=\"glyphicon glyphicon-repeat\" aria-hidden=\"true\"></span> Reboot All Lots" +
+				          "</button>";
+      $( "#gateway-detail-reboot-all-lots-div" ).append(rebootBtnHtml);
+
+	  var addBtnHtml = "<button type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"showAddLotToGatewayModal("+carparkIndex+", "+gatwayIndex+")\">" +
+				            "<span class=\"glyphicon glyphicon-plus\" aria-hidden=\"true\"></span> Add New Lot" +
+				          "</button>";
+      $( "#gateway-details-add-lot" ).append(addBtnHtml);
 	  
 	  var lotCount = 0;
 	  var dataHtml = "";
@@ -223,6 +236,143 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 
       $( "#gateway-details-table" ).append(dataHtml);
   });
+}
+
+function showAddLotToGatewayModal(carparkIndex, gatwayIndex) {
+
+	var carPark = gatewaysCache[carparkIndex];
+	var gateWay = carPark.gatways[gatwayIndex];
+
+	$('#add-lot-gatewayid').html(gateWay.gatewayId);
+	$("#carParkId").val(carPark._id);
+	$("#CoordinatorMacID").val(gateWay.gatewayId);
+
+	$('#add-lot-model').modal('show');
+
+	/**
+	* Add new gateway to carpark
+	*/
+	$("#add-lot-form").submit(function(event) {
+
+		event.preventDefault(); //STOP default action
+
+		//get the data
+		var postData = $(this).serializeArray();
+		console.log(postData);
+
+		$('.form-control').attr('disabled', 'disabled');
+		$('#add-lot-form-btn-close').css('display', 'none');
+		$('#add-lot-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
+
+		$.ajax({
+		    url : baseUrl + 'api/devicemanager/addLotToCarpark',
+		    type: "POST",
+		    data : postData,
+		    success:function(data, textStatus, jqXHR) {
+		        $('#add-lot-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+				$('.form-control').removeAttr('disabled');
+		        $('#add-lot-form-btn-close').css('display', 'inline');
+		        $('#add-lot-form-btn-add').html('Add');
+		    }
+		});
+	});
+}
+
+function rebootAllLots(coordinatorId) {
+
+	console.log(coordinatorId);
+	$('#gateway-detail-reboot-all-lots').html('<span class="glyphicon glyphicon-refresh spinning"></span> Rebooting...');
+	$('#gateway-detail-reboot-all-lots').attr('disabled', 'disabled');
+
+	/**
+	* Reboot all lots
+	*/
+	$.ajax({
+	    url : baseUrl + 'api/devicemanager/addCommand',
+	    type: "POST",
+	    data : "coordinatorId="+coordinatorId+"&type=1",
+	    success:function(data, textStatus, jqXHR) {
+	        $('#gateway-detail-reboot-all-lots').html('<span class="glyphicon glyphicon-ok"></span> Rebooted Successfully!');
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	        $('#gateway-detail-reboot-all-lots').html('<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reboot All Lots');
+			$('#gateway-detail-reboot-all-lots').removeAttr('disabled');
+	    }
+	});
+}
+
+function rebootLot(coordinatorId, lotId) {
+
+	console.log(coordinatorId);
+	console.log(lotId);
+	$('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-refresh spinning"></span> Rebooting...');
+	$('#lot-detail-reboot-lot').attr('disabled', 'disabled');
+
+	/**
+	* Reboot all lots
+	*/
+	$.ajax({
+	    url : baseUrl + 'api/devicemanager/addCommand',
+	    type: "POST",
+	    data : "coordinatorId="+coordinatorId+"&type=2&lot="+lotId,
+	    success:function(data, textStatus, jqXHR) {
+	        $('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-ok"></span> Rebooted Successfully!');
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	        $('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reboot Lot');
+			$('#lot-detail-reboot-lot').removeAttr('disabled');
+	    }
+	});
+}
+
+function lockLot(coordinatorId, lotId) {
+
+	console.log(coordinatorId);
+	console.log(lotId);
+	$('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-refresh spinning"></span> Locking...');
+	$('#lot-detail-lock-unlock').attr('disabled', 'disabled');
+
+	/**
+	* Reboot all lots
+	*/
+	$.ajax({
+	    url : baseUrl + 'api/devicemanager/addCommand',
+	    type: "POST",
+	    data : "coordinatorId="+coordinatorId+"&type=3&lot="+lotId,
+	    success:function(data, textStatus, jqXHR) {
+	        $('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-ok"></span> Locked Successfully!');
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	        $('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Lock');
+			$('#lot-detail-lock-unlock').removeAttr('disabled');
+	    }
+	});
+}
+
+function unlockLot(coordinatorId, lotId) {
+
+	console.log(coordinatorId);
+	console.log(lotId);
+	$('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-refresh spinning"></span> Unlocking...');
+	$('#lot-detail-lock-unlock').attr('disabled', 'disabled');
+
+	/**
+	* Reboot all lots
+	*/
+	$.ajax({
+	    url : baseUrl + 'api/devicemanager/addCommand',
+	    type: "POST",
+	    data : "coordinatorId="+coordinatorId+"&type=4&lot="+lotId,
+	    success:function(data, textStatus, jqXHR) {
+	        $('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-ok"></span> Unlocked Successfully!');
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	        $('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Unlock');
+			$('#lot-detail-lock-unlock').removeAttr('disabled');
+	    }
+	});
 }
 
 function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
@@ -243,7 +393,34 @@ function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 	  $( "#sensor-detail-mac-address" ).html(sensor.LotMacID);
 	  $( "#sensor-detail-battery" ).html("75%");
 
-	  $( "#sensor-detail-status" ).html("Occupied");
+	  if (sensor.state == 0) {
+	  	$( "#sensor-detail-status" ).html("Free");
+	  } else if (sensor.state == 1) {
+	  	$( "#sensor-detail-status" ).html("Occupied");
+	  } else if (sensor.state == 2) {
+	  	$( "#sensor-detail-status" ).html("Locked");
+	  } else if (sensor.state == 3) {
+	  	$( "#sensor-detail-status" ).html("Unlocked");
+	  }
+
 	  $( "#sensor-detail-lock" ).html("Open");
+
+	  var rebootBtnHtml = "<button id=\"lot-detail-reboot-lot\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"rebootLot('"+gateWay.gatewayId+"', '"+sensor.lot_num+"')\">" +
+				            "<span class=\"glyphicon glyphicon-repeat\" aria-hidden=\"true\"></span> Reboot Lot" +
+				          "</button>";
+      $( "#lot-detail-reboot-lot-div" ).append(rebootBtnHtml);
+
+      if (sensor.state == 2) {
+		  var lockBtnHtml = "<button id=\"lot-detail-lock-unlock\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"unlockLot('"+gateWay.gatewayId+"', '"+sensor.lot_num+"')\">" +
+					            "<span class=\"glyphicon glyphicon-lock\" aria-hidden=\"true\"></span> Unlock" +
+					          "</button>";
+	      $( "#lot-detail-lock-unlock-div" ).append(lockBtnHtml);
+
+      } else {
+		  var unlockBtnHtml = "<button id=\"lot-detail-lock-unlock\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"lockLot('"+gateWay.gatewayId+"', '"+sensor.lot_num+"')\">" +
+						            "<span class=\"glyphicon glyphicon-lock\" aria-hidden=\"true\"></span> Lock" +
+						          "</button>";
+	      $( "#lot-detail-lock-unlock-div" ).append(unlockBtnHtml);      	
+      }
   });
 }
