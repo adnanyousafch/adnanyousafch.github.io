@@ -290,7 +290,7 @@ function rebootAllLots(coordinatorId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/devicemanager/addCommand',
+	    url : baseUrl + 'api/command/addCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=1",
 	    success:function(data, textStatus, jqXHR) {
@@ -314,7 +314,7 @@ function rebootLot(coordinatorId, lotId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/devicemanager/addCommand',
+	    url : baseUrl + 'api/command/addCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=2&lot="+lotId,
 	    success:function(data, textStatus, jqXHR) {
@@ -338,7 +338,7 @@ function lockLot(coordinatorId, lotId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/devicemanager/addCommand',
+	    url : baseUrl + 'api/command/addCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=3&lot="+lotId,
 	    success:function(data, textStatus, jqXHR) {
@@ -362,7 +362,7 @@ function unlockLot(coordinatorId, lotId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/devicemanager/addCommand',
+	    url : baseUrl + 'api/command/addCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=4&lot="+lotId,
 	    success:function(data, textStatus, jqXHR) {
