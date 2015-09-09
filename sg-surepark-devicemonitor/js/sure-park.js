@@ -230,7 +230,7 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 		                "<td class=\"col-xs-2\">Status: "+valueLots.state+"</td>" +
 		                "<td class=\"col-xs-4\">Sensor "+lotCount+"</td>" +
 		                "<td class=\"col-xs-4\">"+valueLots.CoordinatorMacID+"</td>" +
-		                "<td class=\"col-xs-4\">"+valueLots.lot_num+"</td>" +
+		                "<td class=\"col-xs-4\">"+valueLots.lotId+"</td>" +
 		              "</tr>";
 	  });
 
@@ -387,7 +387,7 @@ function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 	  $( "#sensor-detail-carpark-name" ).html(carPark.name);
 	  $( "#sensor-detail-gateway-no" ).html("Gateway " + (gatwayIndex+1));
 	  $( "#sensor-detail-sensor-no" ).html("Sensor " + (sensorIndex+1));
-	  $( "#sensor-detail-sensor-lotid" ).html(sensor.lot_num);
+	  $( "#sensor-detail-sensor-lotid" ).html(sensor.lotId);
 
 	  $( "#sensor-detail-gateway-firmware-no" ).html(sensor.firmwareVersion);
 	  $( "#sensor-detail-mac-address" ).html(sensor.LotMacID);
@@ -405,19 +405,19 @@ function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 
 	  $( "#sensor-detail-lock" ).html("Open");
 
-	  var rebootBtnHtml = "<button id=\"lot-detail-reboot-lot\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"rebootLot('"+gateWay.gatewayId+"', '"+sensor.lot_num+"')\">" +
+	  var rebootBtnHtml = "<button id=\"lot-detail-reboot-lot\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"rebootLot('"+gateWay.gatewayId+"', '"+sensor.lotId+"')\">" +
 				            "<span class=\"glyphicon glyphicon-repeat\" aria-hidden=\"true\"></span> Reboot Lot" +
 				          "</button>";
       $( "#lot-detail-reboot-lot-div" ).append(rebootBtnHtml);
 
       if (sensor.state == 2) {
-		  var lockBtnHtml = "<button id=\"lot-detail-lock-unlock\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"unlockLot('"+gateWay.gatewayId+"', '"+sensor.lot_num+"')\">" +
+		  var lockBtnHtml = "<button id=\"lot-detail-lock-unlock\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"unlockLot('"+gateWay.gatewayId+"', '"+sensor.lotId+"')\">" +
 					            "<span class=\"glyphicon glyphicon-lock\" aria-hidden=\"true\"></span> Unlock" +
 					          "</button>";
 	      $( "#lot-detail-lock-unlock-div" ).append(lockBtnHtml);
 
       } else {
-		  var unlockBtnHtml = "<button id=\"lot-detail-lock-unlock\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"lockLot('"+gateWay.gatewayId+"', '"+sensor.lot_num+"')\">" +
+		  var unlockBtnHtml = "<button id=\"lot-detail-lock-unlock\" type=\"button\" class=\"btn btn-info btn-sm pull-right\" data-toggle=\"modal\" onClick=\"lockLot('"+gateWay.gatewayId+"', '"+sensor.lotId+"')\">" +
 						            "<span class=\"glyphicon glyphicon-lock\" aria-hidden=\"true\"></span> Lock" +
 						          "</button>";
 	      $( "#lot-detail-lock-unlock-div" ).append(unlockBtnHtml);      	
