@@ -3,9 +3,34 @@ var gatewaysCache = null;
 
 $(document).ready(function() {
 
-  loadCarparks();
+  	var action = $.urlParam('action');
+  	if (action == 'loadCarparkDetails') {
+  		loadCarparkDetails($.urlParam('carparkIndex'));
+  	} else if (action == 'loadGateways') {
+  		loadGateways();
+  	} else if (action == 'loadGatewayDetails') {
+  		loadGatewayDetails($.urlParam('carparkIndex'), $.urlParam('keyGateway'));
+  	} else if (action == 'loadSensorDetails') {
+  		loadSensorDetails($.urlParam('carparkIndex'), $.urlParam('gatwayIndex'), $.urlParam('sensorIndex'));
+  	} else {
+  		loadCarparks();  	
+	}
 
 });
+
+$.urlParam = function(name){
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    if (results==null){
+       return null;
+    }
+    else{
+       return results[1] || 0;
+    }
+}
+
+function openUrl(url) {
+	location.href = url;
+}
 
 function loadCarparks() {
 
@@ -29,11 +54,12 @@ function loadCarparks() {
 	          var count = 0;
 	          data = eval(data);
 	          gatewaysCache = data;
+	          localStorage.setItem('gatewaysCache', JSON.stringify(data));
 
 	          $.each(data, function(key,value){
 	              count++;
 	              if (value._id != null) {
-		              var dataHtml = "<tr class=\"clickable\" onClick=\"loadCarparkDetails("+key+")\" data-url=\"activities.html\">";
+		              var dataHtml = "<tr class=\"clickable\" onClick=\"openUrl('index.html?action=loadCarparkDetails&carparkIndex="+key+"')\" data-url=\"activities.html\">";
 		              dataHtml += "<td>"+value.name+"</td>";
 		              dataHtml += "<td>"+value.gatways.length+"</td>";
 		              var countGateWays = 0;
@@ -93,6 +119,8 @@ function loadCarparkDetails(carparkIndex) {
 
   $( "#main-container" ).load( "include-carparks-details.html?" + (new Date()).getTime(), function() {
 	  
+	  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
+	  console.log(gatewaysCache);
 	  var carPark = gatewaysCache[carparkIndex];
 	  $( "#carparks-details-name" ).html(carPark.name);
 
@@ -101,7 +129,7 @@ function loadCarparkDetails(carparkIndex) {
 	  console.log(carPark);
 	  $.each(carPark.gatways, function(keyGateway,valueGateway){	
 	  	  gatewayCount++;            
-	  	  dataHtml += "<tr class=\"clickable\" onClick=\"loadGatewayDetails("+carparkIndex+", "+keyGateway+")\">" +
+	  	  dataHtml += "<tr class=\"clickable\" onClick=\"openUrl('index.html?action=loadGatewayDetails&carparkIndex="+carparkIndex+"&keyGateway="+keyGateway+"')\">" +
 		                "<td class=\"col-xs-10\">Gateway "+gatewayCount+"</td>" +
 		                "<td class=\"col-xs-2\">"+valueGateway.lots.length+" sensors</td>" +
 		              "</tr>";
@@ -113,6 +141,7 @@ function loadCarparkDetails(carparkIndex) {
 
 function loadGateways() {
 
+  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
   $( ".navlinks" ).removeClass("selected");
   $( "#navlink-gateways" ).addClass("selected");
   $( "#main-container" ).load( "include-gateways.html?" + (new Date()).getTime(), function() {
@@ -142,7 +171,7 @@ function loadGateways() {
       	  var gatewayCount = 0;
 		  $.each(value.gatways, function(keyGateway,valueGateway){	
 		  	  gatewayCount++;            
-		  	  dataHtml += "<tr class=\"clickable\" onClick=\"loadGatewayDetails("+key+", "+keyGateway+")\">" +
+		  	  dataHtml += "<tr class=\"clickable\" onClick=\"openUrl('index.html?action=loadGatewayDetails&carparkIndex="+key+"&keyGateway="+keyGateway+"')\">" +
 			                "<td class=\"col-xs-10\">Gateway "+gatewayCount+"</td>" +
 			                "<td class=\"col-xs-2\">"+valueGateway.lots.length+" sensors</td>" +
 			              "</tr>";
@@ -207,6 +236,7 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 
   $( "#main-container" ).load( "include-gateway-details.html?" + (new Date()).getTime(), function() {
 	  
+	  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	  var carPark = gatewaysCache[carparkIndex];
 	  var gateWay = carPark.gatways[gatwayIndex];
 	  var firstLot = gateWay.lots[0];
@@ -233,8 +263,8 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 	  var lotCount = 0;
 	  var dataHtml = "";
 	  $.each(gateWay.lots, function(keyLots,valueLots){	
-	  	  lotCount++;            
-	  	  dataHtml += "<tr class=\"clickable\" onClick=\"loadSensorDetails("+carparkIndex+", "+gatwayIndex+", "+keyLots+")\">" +
+	  	  lotCount++;
+	  	  dataHtml += "<tr class=\"clickable\" onClick=\"openUrl('index.html?action=loadSensorDetails&carparkIndex="+carparkIndex+"&gatwayIndex="+gatwayIndex+"&sensorIndex="+keyLots+"')\">" +
 		                "<td class=\"col-xs-2\">Status: "+valueLots.state+"</td>" +
 		                "<td class=\"col-xs-4\">Sensor "+lotCount+"</td>" +
 		                "<td class=\"col-xs-4\">"+valueLots.CoordinatorMacID+"</td>" +
@@ -248,6 +278,7 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 
 function showAddLotToGatewayModal(carparkIndex, gatwayIndex) {
 
+	var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	var carPark = gatewaysCache[carparkIndex];
 	var gateWay = carPark.gatways[gatwayIndex];
 
@@ -391,6 +422,7 @@ function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 
   $( "#main-container" ).load( "include-sensor-details.html?" + (new Date()).getTime(), function() {
 	  
+	  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	  var carPark = gatewaysCache[carparkIndex];
 	  var gateWay = carPark.gatways[gatwayIndex];
 	  var sensor = gateWay.lots[sensorIndex];
