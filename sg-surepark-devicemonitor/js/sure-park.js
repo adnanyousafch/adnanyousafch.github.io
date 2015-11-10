@@ -11,7 +11,7 @@ function loadCarparks() {
 
   $( ".navlinks" ).removeClass("selected");
   $( "#navlink-carparks" ).addClass("selected");
-  $( "#main-container" ).load( "include-carparks.html", function() {
+  $( "#main-container" ).load( "include-carparks.html?" + (new Date()).getTime(), function() {
 
 	  /**
 	   * Show data
@@ -65,6 +65,7 @@ function loadCarparks() {
 		console.log(postData);
 
 		$('.form-control').attr('disabled', 'disabled');
+		$('#server-error').css('display', 'none');
         $('#add-carpark-form-btn-close').css('display', 'none');
         $('#add-carpark-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
 
@@ -75,7 +76,10 @@ function loadCarparks() {
 	        success:function(data, textStatus, jqXHR) {
 		        $('#add-carpark-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
 	        },
-	        error: function(jqXHR, textStatus, errorThrown) {
+	        error: function(e) {
+    			var error = e.responseJSON.error;
+				$('#server-error').css('display', 'block');
+				$('#server-error').html('Server error: ' + error);
 				$('.form-control').removeAttr('disabled');
 		        $('#add-carpark-form-btn-close').css('display', 'inline');
 		        $('#add-carpark-form-btn-add').html('Add');
@@ -87,7 +91,7 @@ function loadCarparks() {
 
 function loadCarparkDetails(carparkIndex) {
 
-  $( "#main-container" ).load( "include-carparks-details.html", function() {
+  $( "#main-container" ).load( "include-carparks-details.html?" + (new Date()).getTime(), function() {
 	  
 	  var carPark = gatewaysCache[carparkIndex];
 	  $( "#carparks-details-name" ).html(carPark.name);
@@ -111,7 +115,7 @@ function loadGateways() {
 
   $( ".navlinks" ).removeClass("selected");
   $( "#navlink-gateways" ).addClass("selected");
-  $( "#main-container" ).load( "include-gateways.html", function() {
+  $( "#main-container" ).load( "include-gateways.html?" + (new Date()).getTime(), function() {
 
 	  /**
 	   * Show data
@@ -176,6 +180,7 @@ function showAddGatewayToCarkparkModal(carparkId) {
 		console.log(postData);
 
 		$('.form-control').attr('disabled', 'disabled');
+		$('#server-error').css('display', 'none');
 		$('#add-gateway-form-btn-close').css('display', 'none');
 		$('#add-gateway-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
 
@@ -186,7 +191,10 @@ function showAddGatewayToCarkparkModal(carparkId) {
 		    success:function(data, textStatus, jqXHR) {
 		        $('#add-gateway-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
 		    },
-		    error: function(jqXHR, textStatus, errorThrown) {
+		    error: function(e) {
+    			var error = e.responseJSON.error;
+				$('#server-error').css('display', 'block');
+				$('#server-error').html('Server error: ' + error);
 				$('.form-control').removeAttr('disabled');
 		        $('#add-gateway-form-btn-close').css('display', 'inline');
 		        $('#add-gateway-form-btn-add').html('Add');
@@ -197,7 +205,7 @@ function showAddGatewayToCarkparkModal(carparkId) {
 
 function loadGatewayDetails(carparkIndex, gatwayIndex) {
 
-  $( "#main-container" ).load( "include-gateway-details.html", function() {
+  $( "#main-container" ).load( "include-gateway-details.html?" + (new Date()).getTime(), function() {
 	  
 	  var carPark = gatewaysCache[carparkIndex];
 	  var gateWay = carPark.gatways[gatwayIndex];
@@ -261,6 +269,7 @@ function showAddLotToGatewayModal(carparkIndex, gatwayIndex) {
 		console.log(postData);
 
 		$('.form-control').attr('disabled', 'disabled');
+		$('#server-error').css('display', 'none');
 		$('#add-lot-form-btn-close').css('display', 'none');
 		$('#add-lot-form-btn-add').html('<span class="glyphicon glyphicon-refresh spinning"></span> Adding...');
 
@@ -271,7 +280,10 @@ function showAddLotToGatewayModal(carparkIndex, gatwayIndex) {
 		    success:function(data, textStatus, jqXHR) {
 		        $('#add-lot-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
 		    },
-		    error: function(jqXHR, textStatus, errorThrown) {
+		    error: function(e) {
+    			var error = e.responseJSON.error;
+				$('#server-error').css('display', 'block');
+				$('#server-error').html('Server error: ' + error);
 				$('.form-control').removeAttr('disabled');
 		        $('#add-lot-form-btn-close').css('display', 'inline');
 		        $('#add-lot-form-btn-add').html('Add');
@@ -377,7 +389,7 @@ function unlockLot(coordinatorId, lotId) {
 
 function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 
-  $( "#main-container" ).load( "include-sensor-details.html", function() {
+  $( "#main-container" ).load( "include-sensor-details.html?" + (new Date()).getTime(), function() {
 	  
 	  var carPark = gatewaysCache[carparkIndex];
 	  var gateWay = carPark.gatways[gatwayIndex];

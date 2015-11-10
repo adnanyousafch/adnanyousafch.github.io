@@ -13,6 +13,10 @@ commons
 	color: #77bce0;
 }
 
+.red {
+	color: #F44336;
+}
+
 .clickable {
 	cursor: pointer;
 }
