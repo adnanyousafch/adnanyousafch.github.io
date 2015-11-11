@@ -4,6 +4,33 @@ var gatewaysCache = null;
 $(document).ready(function() {
 
   	var action = $.urlParam('action');
+  	var refresh = localStorage.getItem('refresh');
+	gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
+	if (!gatewaysCache || !action || refresh) {
+	  localStorage.removeItem('refresh');
+	  $.ajax({
+	      url: baseUrl + 'api/devicemanager/getAllGatewaysWithLotsInformation',
+	      data: {
+	          format: 'json'
+	      },
+	      error: function(e) {
+	      },
+	      success: function(data) {
+	          console.log(data);
+	          data = eval(data);
+	          gatewaysCache = data;
+	          localStorage.setItem('gatewaysCache', JSON.stringify(data));
+			  
+			  processRequest(action);
+	      },
+	      type: 'GET'
+	  });		
+	} else {
+		processRequest(action);
+	}
+});
+
+function processRequest(action) {
   	if (action == 'loadCarparkDetails') {
   		loadCarparkDetails($.urlParam('carparkIndex'));
   	} else if (action == 'loadGateways') {
@@ -14,9 +41,8 @@ $(document).ready(function() {
   		loadSensorDetails($.urlParam('carparkIndex'), $.urlParam('gatwayIndex'), $.urlParam('sensorIndex'));
   	} else {
   		loadCarparks();  	
-	}
-
-});
+	}	
+}
 
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -38,46 +64,26 @@ function loadCarparks() {
   $( "#navlink-carparks" ).addClass("selected");
   $( "#main-container" ).load( "include-carparks.html?" + (new Date()).getTime(), function() {
 
-	  /**
-	   * Show data
-	   */
-	  $.ajax({
-	      url: baseUrl + 'api/devicemanager/getAllGatewaysWithLotsInformation',
-	      data: {
-	          format: 'json'
-	      },
-	      error: function(xhr, status, error) {
-	          $('#message').html("An error occured");
-	       },
-	      success: function(data) {
-	        console.log(data);
-	          var count = 0;
-	          data = eval(data);
-	          gatewaysCache = data;
-	          localStorage.setItem('gatewaysCache', JSON.stringify(data));
+      var count = 0;
+      $.each(gatewaysCache, function(key,value){
+          count++;
+          if (value._id != null) {
+              var dataHtml = "<tr class=\"clickable\" onClick=\"openUrl('index.html?action=loadCarparkDetails&carparkIndex="+key+"')\" data-url=\"activities.html\">";
+              dataHtml += "<td>"+value.name+"</td>";
+              dataHtml += "<td>"+value.gatways.length+"</td>";
+              var countGateWays = 0;
+              var countLots = 0;
+  	          $.each(value.gatways, function(key,value){
+  	          	countLots += value.lots.length;
+  	          });
+              dataHtml += "<td>"+countLots+"</td>";
+              dataHtml += "</tr>";
+          }
 
-	          $.each(data, function(key,value){
-	              count++;
-	              if (value._id != null) {
-		              var dataHtml = "<tr class=\"clickable\" onClick=\"openUrl('index.html?action=loadCarparkDetails&carparkIndex="+key+"')\" data-url=\"activities.html\">";
-		              dataHtml += "<td>"+value.name+"</td>";
-		              dataHtml += "<td>"+value.gatways.length+"</td>";
-		              var countGateWays = 0;
-		              var countLots = 0;
-	      	          $.each(value.gatways, function(key,value){
-	      	          	countLots += value.lots.length;
-	      	          });
-		              dataHtml += "<td>"+countLots+"</td>";
-		              dataHtml += "</tr>";
-		          }
+          $("#carparks-table > tbody").append(dataHtml);
+      });
 
-	              $("#carparks-table > tbody").append(dataHtml);
-	          });
-
-	          $('#message').html(count + ' rows fetched successfully');
-	      },
-	      type: 'GET'
-	  });
+      $('#message').html(count + ' rows fetched successfully');
 
 	  /**
 	   * Add new carpark
@@ -101,6 +107,7 @@ function loadCarparks() {
 	        data : postData,
 	        success:function(data, textStatus, jqXHR) {
 		        $('#add-carpark-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
+				refreshAndreload();
 	        },
 	        error: function(e) {
     			var error = e.responseJSON.error;
@@ -119,7 +126,6 @@ function loadCarparkDetails(carparkIndex) {
 
   $( "#main-container" ).load( "include-carparks-details.html?" + (new Date()).getTime(), function() {
 	  
-	  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	  console.log(gatewaysCache);
 	  var carPark = gatewaysCache[carparkIndex];
 	  $( "#carparks-details-name" ).html(carPark.name);
@@ -141,7 +147,6 @@ function loadCarparkDetails(carparkIndex) {
 
 function loadGateways() {
 
-  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
   $( ".navlinks" ).removeClass("selected");
   $( "#navlink-gateways" ).addClass("selected");
   $( "#main-container" ).load( "include-gateways.html?" + (new Date()).getTime(), function() {
@@ -219,6 +224,7 @@ function showAddGatewayToCarkparkModal(carparkId) {
 		    data : postData,
 		    success:function(data, textStatus, jqXHR) {
 		        $('#add-gateway-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
+				refreshAndreload();
 		    },
 		    error: function(e) {
     			var error = e.responseJSON.error;
@@ -236,7 +242,6 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 
   $( "#main-container" ).load( "include-gateway-details.html?" + (new Date()).getTime(), function() {
 	  
-	  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	  var carPark = gatewaysCache[carparkIndex];
 	  var gateWay = carPark.gatways[gatwayIndex];
 	  var firstLot = gateWay.lots[0];
@@ -278,7 +283,6 @@ function loadGatewayDetails(carparkIndex, gatwayIndex) {
 
 function showAddLotToGatewayModal(carparkIndex, gatwayIndex) {
 
-	var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	var carPark = gatewaysCache[carparkIndex];
 	var gateWay = carPark.gatways[gatwayIndex];
 
@@ -310,6 +314,7 @@ function showAddLotToGatewayModal(carparkIndex, gatwayIndex) {
 		    data : postData,
 		    success:function(data, textStatus, jqXHR) {
 		        $('#add-lot-form-btn-add').html('<span class="glyphicon glyphicon-ok"></span> Added Successfully!');
+				refreshAndreload();
 		    },
 		    error: function(e) {
     			var error = e.responseJSON.error;
@@ -333,13 +338,14 @@ function rebootAllLots(coordinatorId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/command/addCommand',
+	    url : baseUrl + 'api/command/addNewCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=1",
 	    success:function(data, textStatus, jqXHR) {
 	        $('#gateway-detail-reboot-all-lots').html('<span class="glyphicon glyphicon-ok"></span> Rebooted Successfully!');
+			refreshAndreload();
 	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
+	    error: function(e) {
 	        $('#gateway-detail-reboot-all-lots').html('<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reboot All Lots');
 			$('#gateway-detail-reboot-all-lots').removeAttr('disabled');
 	    }
@@ -357,13 +363,14 @@ function rebootLot(coordinatorId, lotId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/command/addCommand',
+	    url : baseUrl + 'api/command/addNewCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=2&lot="+lotId,
 	    success:function(data, textStatus, jqXHR) {
 	        $('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-ok"></span> Rebooted Successfully!');
+			refreshAndreload();
 	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
+	    error: function(e) {
 	        $('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reboot Lot');
 			$('#lot-detail-reboot-lot').removeAttr('disabled');
 	    }
@@ -381,13 +388,14 @@ function lockLot(coordinatorId, lotId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/command/addCommand',
+	    url : baseUrl + 'api/command/addNewCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=3&lot="+lotId,
 	    success:function(data, textStatus, jqXHR) {
 	        $('#lot-detail-reboot-lot').html('<span class="glyphicon glyphicon-ok"></span> Locked Successfully!');
+			refreshAndreload();
 	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
+	    error: function(e) {
 	        $('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Lock');
 			$('#lot-detail-lock-unlock').removeAttr('disabled');
 	    }
@@ -405,13 +413,14 @@ function unlockLot(coordinatorId, lotId) {
 	* Reboot all lots
 	*/
 	$.ajax({
-	    url : baseUrl + 'api/command/addCommand',
+	    url : baseUrl + 'api/command/addNewCommand',
 	    type: "POST",
 	    data : "coordinatorId="+coordinatorId+"&type=4&lot="+lotId,
 	    success:function(data, textStatus, jqXHR) {
 	        $('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-ok"></span> Unlocked Successfully!');
+			refreshAndreload();
 	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
+	    error: function(e) {
 	        $('#lot-detail-lock-unlock').html('<span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Unlock');
 			$('#lot-detail-lock-unlock').removeAttr('disabled');
 	    }
@@ -422,7 +431,6 @@ function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 
   $( "#main-container" ).load( "include-sensor-details.html?" + (new Date()).getTime(), function() {
 	  
-	  var gatewaysCache = JSON.parse(localStorage.getItem('gatewaysCache'));
 	  var carPark = gatewaysCache[carparkIndex];
 	  var gateWay = carPark.gatways[gatwayIndex];
 	  var sensor = gateWay.lots[sensorIndex];
@@ -467,4 +475,12 @@ function loadSensorDetails(carparkIndex, gatwayIndex, sensorIndex) {
 	      $( "#lot-detail-lock-unlock-div" ).append(unlockBtnHtml);      	
       }
   });
+}
+
+function refreshAndreload() {
+	localStorage.setItem('refresh', true);
+	localStorage.removeItem('gatewaysCache');
+	setTimeout(function(){
+	   window.location.reload(1);
+	}, 1500);
 }
